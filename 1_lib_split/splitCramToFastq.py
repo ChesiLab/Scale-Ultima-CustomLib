@@ -1,6 +1,7 @@
-import pysam
-import edlib
-import argparse
+import pysam # pip install pysam; python=3.12; conda install stalls out..
+import edlib # pip install edlib
+import gzip
+import argparse 
 from pathlib import Path
 # -----------------------
 # Description
@@ -13,6 +14,8 @@ from pathlib import Path
 
 # Outputs fastq.gz for downstream processing.
 
+# >>>> Running script
+# ./processCram.sh s3://chesilab-testbucket/ultimatest s3://chesilab-testbucket/ultimatestout /home/ec2-user/scratch
 # >>>>> If you want to run just ONE file, i.e. for testing: <<<<<
 # python3 splitCramToFastq.py ~/scale_preprocess/cutadapt/cram/Z0001_02p.cram Z0001_02p
 
@@ -55,8 +58,8 @@ def write_fastq(fh, read):
     )
 
 def process_cram(cram_path, out_prefix):
-    crispr_out_path = f"{out_prefix}_crispr.cram"
-    rna_out_path = f"{out_prefix}_rna.cram"
+    crispr_out_path = f"{out_prefix}_crispr.fastq.gz"
+    rna_out_path = f"{out_prefix}_rna.fastq.gz"
 
     with pysam.AlignmentFile(
         cram_path,
