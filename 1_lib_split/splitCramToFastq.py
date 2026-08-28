@@ -1,5 +1,5 @@
-import pysam # pip install bioconda::pysam; python=3.12; conda install stalls out..
-import edlib # conda install bioconda::edlib
+import pysam # pip install pysam; python=3.12; conda install stalls out..
+import edlib # pip install edlib
 import gzip
 import argparse 
 from pathlib import Path

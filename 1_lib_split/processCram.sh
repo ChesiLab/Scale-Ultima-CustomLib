@@ -6,8 +6,8 @@ set -uo pipefail
 # =========================================================
 # User config — edit these
 # =========================================================
-BUCKET1=$1 # i.e. "s3://chesilab-testbucket"          # folders live here, one .cram per folder
-BUCKET2=$2 # i.e. "s3://chesilab-testpail"         # fastq.gz outputs go here
+BUCKET1=$1 # i.e. "s3://chesilab-testbucket/ultimatest"          # folders live here, one .cram per folder
+BUCKET2=$2 # i.e. "s3://chesilab-testpail/ultimatestout"         # fastq.gz outputs go here
 WORKDIR=$3 # i.e. "/home/ec2-user/scratch"             # local SSD scratch space
 SCRIPT="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/splitCramToFastq.py" #i.e. /home/sjpl/github/Scale-Ultima-CustomLib/1_lib_split/splitCramToFastq.py
 
