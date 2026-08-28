@@ -1,4 +1,5 @@
 Dependencies:
+
 1_lib_split
 - pysam
 - edlib
@@ -7,6 +8,7 @@ Dependencies:
 - samtools
 - cutadapt
 
-3_run_ScaleRNA
+3_run_ScaleRNA\
+folder includes some template config files
 - ScaleRNA pipeline
-- folder includes some template config files
+
