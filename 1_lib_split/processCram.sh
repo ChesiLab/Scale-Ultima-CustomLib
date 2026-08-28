@@ -6,10 +6,10 @@ set -uo pipefail
 # =========================================================
 # User config — edit these
 # =========================================================
-BUCKET1="s3://chesilab-testbucket"          # folders live here, one .cram per folder
-BUCKET2="s3://chesilab-testpail"         # fastq.gz outputs go here
-WORKDIR="/home/ec2-user/work"             # local SSD scratch space
-SCRIPT="/home/ec2-user/split_v4_single.py"
+BUCKET1=$1 # i.e. "s3://chesilab-testbucket"          # folders live here, one .cram per folder
+BUCKET2=$2 # i.e. "s3://chesilab-testpail"         # fastq.gz outputs go here
+WORKDIR=$3 # i.e. "/home/ec2-user/scratch"             # local SSD scratch space
+SCRIPT="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/splitCramToFastq.py" #i.e. /home/sjpl/github/Scale-Ultima-CustomLib/1_lib_split/splitCramToFastq.py
 
 mkdir -p "$WORKDIR"
 LOGFILE="$WORKDIR/process_log_$(date +%Y%m%d_%H%M%S).txt"
@@ -27,7 +27,9 @@ log "Workdir:          $WORKDIR"
 # Get list of top-level "folder" names in Bucket1
 # =========================================================
 # aws s3 ls with a trailing slash lists common prefixes (folders) one level deep.
-folders=$(aws s3 ls "${BUCKET1}/" | awk '/PRE/ {print $2}' | sed 's#/$##')
+folders=$(aws s3 ls "${BUCKET1}/" | awk '/PRE/ {print $2}' | sed 's#/$##') # if on AWS
+# folders=$(ls "${BUCKET1}/" | awk '/PRE/ {print $2}' | sed 's#/$##') # if local
+
 
 if [ -z "$folders" ]; then
     log "ERROR: No folders found in $BUCKET1 — check the bucket path/permissions."

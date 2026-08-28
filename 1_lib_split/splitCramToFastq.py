@@ -14,7 +14,7 @@ from pathlib import Path
 # Outputs fastq.gz for downstream processing.
 
 # >>>>> If you want to run just ONE file, i.e. for testing: <<<<<
-# python3 split5_cram.py ~/scale_preprocess/cutadapt/cram/Z0001_02p.cram Z0001_02p
+# python3 splitCramToFastq.py ~/scale_preprocess/cutadapt/cram/Z0001_02p.cram Z0001_02p
 
 # -----------------------
 # User parameters
@@ -46,13 +46,13 @@ def matches(seq, motifs, max_mismatches=3):
             return True
     return False
 
-# def write_fastq(fh, read):
-#     fh.write(
-#         f"@{read.query_name}\n"
-#         f"{read.query_sequence}\n"
-#         "+\n"
-#         f"{read.qual}\n"
-#     )
+def write_fastq(fh, read):
+    fh.write(
+        f"@{read.query_name}\n"
+        f"{read.query_sequence}\n"
+        "+\n"
+        f"{read.qual}\n"
+    )
 
 def process_cram(cram_path, out_prefix):
     crispr_out_path = f"{out_prefix}_crispr.cram"
@@ -65,12 +65,8 @@ def process_cram(cram_path, out_prefix):
         require_index = False, # don't really need index, we can go sequentially
         check_sq = False # might not need this, usually for unaligned reads.
     ) as cram, \
-         pysam.AlignmentFile(
-             crispr_out_path, "wc", header=cram.header, reference_filename=None
-         ) as crispr_out, \
-         pysam.AlignmentFile(
-             rna_out_path, "wc", header=cram.header, reference_filename=None
-         ) as rna_out:
+         gzip.open(crispr_out_path, "wt") as crispr_out, \
+         gzip.open(rna_out_path, "wt") as rna_out:
         
         # until_eof = False lets us get away w/ not indexing the .cram file.
         for i, read in enumerate(cram.fetch(until_eof=True)):
@@ -83,9 +79,9 @@ def process_cram(cram_path, out_prefix):
 
             # Check for CRISPR motif, then write sequence to fastq's
             if matches(seq, crispr_marker, max_mismatch):
-                crispr_out.write(read)
+                write_fastq(crispr_out, read)
             else:
-                rna_out.write(read)
+                write_fastq(rna_out, read)
 
             # Output progress every 100,000 processed reads.
             if i % 100000 == 0 and i > 0:
