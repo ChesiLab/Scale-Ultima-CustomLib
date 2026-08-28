@@ -58,8 +58,8 @@ def write_fastq(fh, read):
     )
 
 def process_cram(cram_path, out_prefix):
-    crispr_out_path = f"{out_prefix}_crispr.cram"
-    rna_out_path = f"{out_prefix}_rna.cram"
+    crispr_out_path = f"{out_prefix}_crispr.fastq.gz"
+    rna_out_path = f"{out_prefix}_rna.fastq.gz"
 
     with pysam.AlignmentFile(
         cram_path,
