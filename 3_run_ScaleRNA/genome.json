@@ -1,0 +1,7 @@
+{
+	"name": "GRCh38",
+	"star_index" : "/home/ec2-user/grch38/star.ann/",
+	"gtf": "/home/ec2-user/grch38/Homo_sapiens.GRCh38.103.biotypeFiltR.gtf",
+	"isBarnyard": false,
+	"speciesName": "Homo sapiens"
+}
