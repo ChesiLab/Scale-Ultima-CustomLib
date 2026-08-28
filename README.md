@@ -9,4 +9,4 @@ Dependencies:
 
 3_run_ScaleRNA
 - ScaleRNA pipeline
-folder includes some template config files
+- folder includes some template config files
