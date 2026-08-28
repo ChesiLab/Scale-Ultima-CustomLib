@@ -1,6 +1,7 @@
-import pysam
-import edlib
-import argparse
+import pysam # pip install bioconda::pysam; python=3.12; conda install stalls out..
+import edlib # conda install bioconda::edlib
+import gzip
+import argparse 
 from pathlib import Path
 # -----------------------
 # Description
@@ -13,6 +14,8 @@ from pathlib import Path
 
 # Outputs fastq.gz for downstream processing.
 
+# >>>> Running script
+# ./processCram.sh s3://chesilab-testbucket/ultimatest s3://chesilab-testbucket/ultimatestout /home/ec2-user/scratch
 # >>>>> If you want to run just ONE file, i.e. for testing: <<<<<
 # python3 splitCramToFastq.py ~/scale_preprocess/cutadapt/cram/Z0001_02p.cram Z0001_02p
 
