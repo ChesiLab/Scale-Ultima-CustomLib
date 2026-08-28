@@ -4,6 +4,13 @@ set -uo pipefail
 # logged and skipped, not kill the whole batch run.
 
 # =========================================================
+# Example to run wrapper
+# =========================================================
+
+# [script] [AWS S3 folder with source files] [AWS S3 folder to put output] [EC2 folder for staging intermediate files]
+# ./splitCramToFastqWrapper.sh s3://chesilab-testbucket/ultimatest s3://chesilab-testbucket/ultimatestout /home/ec2-user/scratch
+
+# =========================================================
 # User config — edit these
 # =========================================================
 BUCKET1=$1 # i.e. "s3://chesilab-testbucket/ultimatest"          # folders live here, one .cram per folder
