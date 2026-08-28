@@ -9,7 +9,7 @@ set -euo pipefail # could add back 'x' for debugging
 
 # Example:
 # ./convertUltimaToIllumina.sh \
-#     /home/sjpl/github/scratchData/in/Z0001_02p/Z0001_02p_rna.fastq.gz \
+#     /home/sjpl/github/scratchData/in/Z0001_02p/430978-ChesiLab1-Z0001-CAGCTCGAATGCGAT_rna.fastq.gz \
 #     /home/sjpl/github/scratchData/work \
 #     "GCATCGTATG"
 
@@ -20,7 +20,7 @@ set -euo pipefail # could add back 'x' for debugging
 #   ScaleRNA_I2_001.fastq.gz
 
 # =========================================================
-# Arg Definition
+# Input Arg Definitions
 # =========================================================
 
 INPUT_FASTQ="$1"             # Input fastq that came from cram
@@ -33,6 +33,21 @@ if [ ! -f "$INPUT_FASTQ" ]; then
     echo "ERROR: Input FASTQ not found: $INPUT_FASTQ" >&2
     exit 1
 fi
+# =========================================================
+# Setup naming conventions for intermediate files and outputs.
+# =========================================================
+
+# Derive sample number from input filename
+# e.g. 430978-ChesiLab1-Z0001-CAGCTCGAATGCGAT.fastq.gz -> 001
+_raw_num=$(basename "$INPUT_FASTQ" | grep -oP 'Z\K[0-9]+' | sed -n '1p')
+
+if [ -z "$_raw_num" ]; then
+    echo "ERROR: Could not extract Z-number from filename: $(basename "$INPUT_FASTQ")" >&2
+    exit 1
+fi
+
+SAMPLE_NUM=$(printf '%03d' $((10#$_raw_num))) # Force base-10 (avoids octal misinterpretation of leading zeros), repad to 3 digits
+echo "$SAMPLE_NUM"
 
 # Create string for the I2 Quality Score. Will use D because that's the most common.
 QUAL=$(printf 'D%.0s' $(seq ${#BC}))
@@ -43,12 +58,10 @@ OUTPUT_R2_LONG="${WORKDIR}/R2_LONG.fastq.gz"
 OUTPUT_R2_REV="${WORKDIR}/R2_REV.fastq.gz"
 
 # ---- Final outputs (written locally, then uploaded to S3) ----
-OUTPUT_I1="${WORKDIR}/ScaleRNA_I1_001.fastq.gz"
-OUTPUT_I2="${WORKDIR}/ScaleRNA_I2_001.fastq.gz"
-OUTPUT_R1="${WORKDIR}/ScaleRNA_R1_001.fastq.gz"
-OUTPUT_R2="${WORKDIR}/ScaleRNA_R2_001.fastq.gz"
-
-# >>>>>> TODO: the 001 etc needs to match the Z0001 format!! <<<<<
+OUTPUT_I1="${WORKDIR}/ScaleRNA_I1_${SAMPLE_NUM}.fastq.gz"
+OUTPUT_I2="${WORKDIR}/ScaleRNA_I2_${SAMPLE_NUM}.fastq.gz"
+OUTPUT_R1="${WORKDIR}/ScaleRNA_R1_${SAMPLE_NUM}.fastq.gz"
+OUTPUT_R2="${WORKDIR}/ScaleRNA_R2_${SAMPLE_NUM}.fastq.gz"
 
 # =========================================================
 # R1 & R2: trim adapters and filter for pairs reaching min lengths (i.e. really just R2 >= 76bp)
@@ -133,4 +146,3 @@ gzip > "${OUTPUT_I1}"
 rm -f "${OUTPUT_R1_LONG}" "${OUTPUT_R2_LONG}" "${OUTPUT_R2_REV}"
 
 echo "Done: Illumina FASTQs from ${INPUT_FASTQ} in ${WORKDIR}"
-
