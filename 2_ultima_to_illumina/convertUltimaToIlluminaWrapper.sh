@@ -23,11 +23,11 @@ set -uo pipefail
 # Example to run wrapper
 # =========================================================
 # [script] [S3 input folder] [S3 output folder] [EC2 staging dir] [optional barcode CSV]
-./convertUltimaToIlluminaWrapper.sh \
-    s3://chesilab-testbucket/ultimatestout \
-    s3://chesilab-testbucket/scalein \
-    /home/ec2-user/scratch \
-    ./PCR_Barcodes.csv
+# ./convertUltimaToIlluminaWrapper.sh \
+#     s3://chesilab-testbucket/ultimatestout \
+#     s3://chesilab-testbucket/scalein \
+#     /home/ec2-user/scratch \
+#     ./PCR_Barcodes.csv
 
 # =========================================================
 # User config / args
