@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail # could add back 'x' for debugging
+set -euxo pipefail # could add back 'x' for debugging
 
 # =========================================================
 # Usage
