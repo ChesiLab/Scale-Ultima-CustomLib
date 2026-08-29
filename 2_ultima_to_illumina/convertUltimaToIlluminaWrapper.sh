@@ -151,6 +151,21 @@ for folder in $folders; do
     fi
     sample_num=$(printf '%03d' $((10#$raw_num)))   # 10# avoids octal on leading zeros
 
+    # ---- Resume support: skip only if ALL four outputs already exist ----
+    # Checking all four (not just R1) avoids treating a crash-interrupted,
+    # partially-uploaded sample as "done".
+    existing=$(aws s3 ls "${out_s3_prefix}/ScaleRNA_" 2>/dev/null \
+               | awk '{print $4}' | grep -E "_(R1|R2|I1|I2)_${sample_num}\.fastq\.gz$" || true)
+    n_existing=$(echo "$existing" | grep -c . || true)
+
+    if [ "$n_existing" -eq 4 ]; then
+        log "SKIP: sample ${sample_num} (${folder}) already has all 4 outputs in Bucket2."
+        continue
+    elif [ "$n_existing" -gt 0 ]; then
+        log "REDO: sample ${sample_num} (${folder}) has only ${n_existing}/4 outputs — reprocessing."
+        # (uploads below will overwrite the partial set)
+    fi
+
     # ---- 5. Download the input FASTQ to local SSD ----
     mkdir -p "$out_prefix_local"
     log "Copying $fastq_key -> $local_fastq"
