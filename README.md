@@ -7,6 +7,7 @@ Dependencies:
 2_ultima_to_illumina
 - samtools
 - cutadapt
+- seqkit
 
 3_run_ScaleRNA\
 folder includes some template config files
