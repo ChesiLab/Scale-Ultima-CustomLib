@@ -110,7 +110,7 @@ for folder in $folders; do
     log "--- [$count/$total] Processing folder: $folder ---"
 
     out_prefix_local="${WORKDIR}/${folder}"     # local output dir for this sample
-    out_s3_prefix="${BUCKET2}/${folder}"
+    out_s3_prefix="${BUCKET2}"
 
     # ---- 1. Find the input _rna.fastq.gz in this folder ----
     # (filename is NOT the folder name, so we list and match the pattern)
