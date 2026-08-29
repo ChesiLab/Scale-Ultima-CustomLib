@@ -1,6 +1,7 @@
 # Needs to take the S3 location, output save location, and work directory as input arguments
 
 # TODO: Need to have a barcode conversion file!! i.e Ultima to Scale. Probably a .csv file.
+# First column for the Ultima barcodes, 2nd column for the corresponding Scale barcodes.
 # Probably just keep this in the github repo
 
 # Then download the file from S3
