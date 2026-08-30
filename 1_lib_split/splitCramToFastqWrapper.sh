@@ -8,7 +8,7 @@ set -uo pipefail
 # =========================================================
 
 # [script] [AWS S3 folder with source files] [AWS S3 folder to put output] [EC2 folder for staging intermediate files]
-# ./splitCramToFastqWrapper.sh s3://chesilab-testbucket/ultimatest s3://chesilab-testbucket/ultima_fastq /home/ec2-user/scratch
+# nohup ./splitCramToFastqWrapper.sh s3://upenn-chesi-lab-broad-data-transfer s3://chesilab-testbucket/ultima_fastq /home/ec2-user/scratch
 
 # =========================================================
 # User config — edit these

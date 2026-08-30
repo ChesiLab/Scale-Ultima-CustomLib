@@ -87,7 +87,7 @@ def process_cram(cram_path, out_prefix):
                 write_fastq(rna_out, read)
 
             # Output progress every 100,000 processed reads.
-            if i % 100000 == 0 and i > 0:
+            if i % 10000000 == 0 and i > 0:
                 print(f"{cram_path.name}: {i:,} reads processed")
 
 # -----------------------
