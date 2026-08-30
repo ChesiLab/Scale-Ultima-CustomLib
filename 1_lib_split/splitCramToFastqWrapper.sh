@@ -8,7 +8,7 @@ set -uo pipefail
 # =========================================================
 
 # [script] [AWS S3 folder with source files] [AWS S3 folder to put output] [EC2 folder for staging intermediate files]
-# ./splitCramToFastqWrapper.sh s3://chesilab-testbucket/ultimatest s3://chesilab-testbucket/ultimatestout /home/ec2-user/scratch
+# ./splitCramToFastqWrapper.sh s3://chesilab-testbucket/ultimatest s3://chesilab-testbucket/ultima_fastq /home/ec2-user/scratch
 
 # =========================================================
 # User config — edit these
@@ -49,6 +49,12 @@ count=0
 for folder in $folders; do
     count=$((count + 1))
     log "--- [$count/$total] Processing folder: $folder ---"
+
+    # ---- Skip folders that don't contain "ChesiLab" ----
+    if [[ "$folder" != *ChesiLab* ]]; then
+        log "SKIP: ${folder} does not contain 'ChesiLab'."
+        continue
+    fi
 
     cram_key="${BUCKET1}/${folder}/${folder}.cram"
     out_prefix_local="${WORKDIR}/${folder}"          # local output dir for this sample
