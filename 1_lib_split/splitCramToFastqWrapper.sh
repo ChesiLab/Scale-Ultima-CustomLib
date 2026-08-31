@@ -7,9 +7,9 @@ set -uo pipefail
 # Example to run wrapper
 # =========================================================
 
-# conda activate ngstools # or whatever env you're using
+# conda activate libsplit # or whatever env you're using, i.e. ngstools
 # [script] [AWS S3 folder with source files] [AWS S3 folder to put output] [EC2 folder for staging intermediate files]
-# nohup ./splitCramToFastqWrapper.sh s3://upenn-chesi-lab-broad-data-transfer s3://chesilab-testbucket/ultima_fastq /home/ec2-user/scratch
+# nohup ./splitCramToFastqWrapper.sh s3://upenn-chesi-lab-broad-data-transfer s3://chesilab-testbucket/ultima_fastq /home/ec2-user/scratch &
 
 # =========================================================
 # Troubleshooting: Folders to skip (by Z000# code) — add more as issues arise
