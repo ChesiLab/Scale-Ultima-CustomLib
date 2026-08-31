@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail # could add back 'x' for debugging
+set -euxo pipefail # could add back 'x' for debugging
 
 # =========================================================
 # Usage
@@ -69,7 +69,7 @@ OUTPUT_R2="${WORKDIR}/ScaleRNA_R2_${SAMPLE_NUM}.fastq.gz"
 # =========================================================
 
 args1=(
-    # -j 0 # use all available CPU cores
+    -j 0 # use all available CPU cores
     --discard-untrimmed # remove any read w/o an adapter
     --pair-filter any # using cram twice, treated as a "pair". Remove read if either in "pair" fail adapter check
     # Define Read 1 5'+3' adapters; define error_rate and min_overlap for each adapter; 5' adapter is required.
@@ -90,6 +90,7 @@ cutadapt "${args1[@]}"
 # =========================================================
 
 cutadapt \
+    -j 0 \
     --minimum-length 34 \
     --maximum-length 34 \
     --length 34 \
@@ -105,6 +106,7 @@ zcat "${OUTPUT_R2_LONG}" | awk '{print $0 }' | seqkit seq -p -r -t DNA | gzip > 
 
 # Trim to standard Illumina R2 length: 76bp for 76 cycles
 cutadapt \
+    -j 0 \
     --minimum-length 76 \
     --maximum-length 76 \
     --length 76 \

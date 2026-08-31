@@ -7,11 +7,21 @@ set -uo pipefail
 # Example to run wrapper
 # =========================================================
 
+# conda activate libsplit # or whatever env you're using, i.e. ngstools
 # [script] [AWS S3 folder with source files] [AWS S3 folder to put output] [EC2 folder for staging intermediate files]
-# ./splitCramToFastqWrapper.sh s3://chesilab-testbucket/ultimatest s3://chesilab-testbucket/ultimatestout /home/ec2-user/scratch
+# nohup ./splitCramToFastqWrapper.sh s3://upenn-chesi-lab-broad-data-transfer s3://chesilab-testbucket/ultima_fastq /home/ec2-user/scratch &
 
 # =========================================================
-# User config — edit these
+# Troubleshooting: Folders to skip (by Z000# code) — add more as issues arise
+# =========================================================
+SKIP_CODES=(
+    "Z0002"
+    # "Z0007"
+    # "Z0013"
+)
+
+# =========================================================
+# Argument config
 # =========================================================
 BUCKET1=$1 # i.e. "s3://chesilab-testbucket/ultimatest"          # folders live here, one .cram per folder
 BUCKET2=$2 # i.e. "s3://chesilab-testpail/ultimatestout"         # fastq.gz outputs go here
@@ -21,8 +31,20 @@ SCRIPT="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/splitCramToFastq.py" #i.e. 
 mkdir -p "$WORKDIR"
 LOGFILE="$WORKDIR/process_log_$(date +%Y%m%d_%H%M%S).txt"
 
+# Helper function for logging.
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOGFILE"
+}
+
+# Helper function for skipping specific folders by SKIP_CODE
+should_skip() {
+    local folder="$1"
+    for code in "${SKIP_CODES[@]}"; do
+        if [[ "$folder" == *"$code"* ]]; then
+            return 0   # true, should skip
+        fi
+    done
+    return 1   # false, don't skip
 }
 
 log "=== Starting batch run ==="
@@ -49,6 +71,18 @@ count=0
 for folder in $folders; do
     count=$((count + 1))
     log "--- [$count/$total] Processing folder: $folder ---"
+
+    # ---- Skip folders that don't contain "ChesiLab" ----
+    if [[ "$folder" != *ChesiLab* ]]; then
+        log "SKIP: ${folder} does not contain 'ChesiLab'."
+        continue
+    fi
+
+    # ---- Skip known "bad" folders by Z000# code ----
+    if should_skip "$folder"; then
+        log "SKIP: ${folder} matches a known Z000# code in SKIP_CODES."
+        continue
+    fi
 
     cram_key="${BUCKET1}/${folder}/${folder}.cram"
     out_prefix_local="${WORKDIR}/${folder}"          # local output dir for this sample
