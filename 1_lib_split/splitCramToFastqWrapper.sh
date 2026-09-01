@@ -14,6 +14,7 @@ set -uo pipefail
 # =========================================================
 # Troubleshooting: Folders to skip (by Z000# code) — add more as issues arise
 # =========================================================
+
 SKIP_CODES=(
     "Z0002"
     # "Z0007"
@@ -28,7 +29,7 @@ BUCKET2=$2 # i.e. "s3://chesilab-testpail/ultimatestout"         # fastq.gz outp
 WORKDIR=$3 # i.e. "/home/ec2-user/scratch"             # local SSD scratch space
 SCRIPT="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/splitCramToFastq.py" #i.e. /home/sjpl/github/Scale-Ultima-CustomLib/1_lib_split/splitCramToFastq.py
 
-mkdir -p "$WORKDIR"
+mkdir -p "$WORKDIR" # Creates work directory if it does not yet exist
 LOGFILE="$WORKDIR/process_log_$(date +%Y%m%d_%H%M%S).txt"
 
 # Helper function for logging.
