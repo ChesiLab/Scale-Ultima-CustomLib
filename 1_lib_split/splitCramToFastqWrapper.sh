@@ -17,7 +17,7 @@ set -uo pipefail
 
 SKIP_CODES=(
     "Z0002"
-    # "Z0007"
+    "Z0006"
     # "Z0013"
 )
 
