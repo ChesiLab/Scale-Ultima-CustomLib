@@ -14,9 +14,10 @@ set -uo pipefail
 # =========================================================
 # Troubleshooting: Folders to skip (by Z000# code) — add more as issues arise
 # =========================================================
+
 SKIP_CODES=(
     "Z0002"
-    # "Z0007"
+    "Z0006"
     # "Z0013"
 )
 
@@ -28,23 +29,16 @@ BUCKET2=$2 # i.e. "s3://chesilab-testpail/ultimatestout"         # fastq.gz outp
 WORKDIR=$3 # i.e. "/home/ec2-user/scratch"             # local SSD scratch space
 SCRIPT="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/splitCramToFastq.py" #i.e. /home/sjpl/github/Scale-Ultima-CustomLib/1_lib_split/splitCramToFastq.py
 
-mkdir -p "$WORKDIR"
+mkdir -p "$WORKDIR" # Creates work directory if it does not yet exist
 LOGFILE="$WORKDIR/process_log_$(date +%Y%m%d_%H%M%S).txt"
 
-# Helper function for logging.
-log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOGFILE"
-}
 
-# Helper function for skipping specific folders by SKIP_CODE
-should_skip() {
-    local folder="$1"
-    for code in "${SKIP_CODES[@]}"; do
-        if [[ "$folder" == *"$code"* ]]; then
-            return 0   # true, should skip
-        fi
-    done
-    return 1   # false, don't skip
+# =========================================================
+# Logging set-up
+# =========================================================
+
+log() { # Helper function for logging.
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOGFILE"
 }
 
 log "=== Starting batch run ==="
@@ -53,13 +47,12 @@ log "Bucket2 (output): $BUCKET2"
 log "Workdir:          $WORKDIR"
 
 # =========================================================
-# Get list of top-level "folder" names in Bucket1
+# Folder handling from BUCKET1
 # =========================================================
-# aws s3 ls with a trailing slash lists common prefixes (folders) one level deep.
-folders=$(aws s3 ls "${BUCKET1}/" | awk '/PRE/ {print $2}' | sed 's#/$##') # if on AWS
-# folders=$(ls "${BUCKET1}/" | awk '/PRE/ {print $2}' | sed 's#/$##') # if local
+# Gets paths for folders contained in BUCKET1
+folders=$(aws s3 ls "${BUCKET1}/" | awk '/PRE/ {print $2}' | sed 's#/$##') # must be on AWS
 
-
+# ---- CHECK: Throw error if no folders found in BUCKET1 ----
 if [ -z "$folders" ]; then
     log "ERROR: No folders found in $BUCKET1 — check the bucket path/permissions."
     exit 1
@@ -72,31 +65,38 @@ for folder in $folders; do
     count=$((count + 1))
     log "--- [$count/$total] Processing folder: $folder ---"
 
-    # ---- Skip folders that don't contain "ChesiLab" ----
+    # ---- CHECK: Skip folders that don't contain "ChesiLab" ----
     if [[ "$folder" != *ChesiLab* ]]; then
         log "SKIP: ${folder} does not contain 'ChesiLab'."
         continue
     fi
 
-    # ---- Skip known "bad" folders by Z000# code ----
-    if should_skip "$folder"; then
+    # ---- CHECK: Skip known "bad" folders by Z000# code ----
+    skip_folder=false
+    for code in "${SKIP_CODES[@]}"; do
+        if [[ "$folder" == *"$code"* ]]; then
+            skip_folder=true
+            break
+        fi
+    done
+    if [ "$skip_folder" = true ]; then
         log "SKIP: ${folder} matches a known Z000# code in SKIP_CODES."
         continue
     fi
 
-    cram_key="${BUCKET1}/${folder}/${folder}.cram"
-    out_prefix_local="${WORKDIR}/${folder}"          # local output dir for this sample
-    local_cram="${WORKDIR}/${folder}.cram"
-    out_s3_prefix="${BUCKET2}/${folder}"
+    cram_key="${BUCKET1}/${folder}/${folder}.cram"  # Gets path for source CRAM file
+    out_prefix_local="${WORKDIR}/${folder}"         # Local working dir for this CRAM file
+    local_cram="${WORKDIR}/${folder}.cram"          # Gets local path for CRAM file (i.e. we downloaded it)
+    out_s3_prefix="${BUCKET2}/${folder}"            # Final save location for fastq.gz files
 
-    # ---- Skip if already processed (idempotency / safe to re-run) ----
-    already_done=$(aws s3 ls "${out_s3_prefix}/${folder}_crispr.fastq.gz" 2>/dev/null || true)
+    # ---- CHECK: Skip if already processed ----
+    already_done=$(aws s3 ls "${out_s3_prefix}/${folder}_rna.fastq.gz" 2>/dev/null || true)
     if [ -n "$already_done" ]; then
         log "SKIP: ${folder} already has output in Bucket2."
         continue
     fi
 
-    # ---- 1. Check the source CRAM exists ----
+    # ---- 1. Does the source CRAM exist? ----
     exists=$(aws s3 ls "$cram_key" 2>/dev/null || true)
     if [ -z "$exists" ]; then
         log "WARNING: No CRAM found at $cram_key — skipping."
@@ -123,6 +123,7 @@ for folder in $folders; do
     crispr_fastq="${out_prefix_local}/${folder}_crispr.fastq.gz"
     rna_fastq="${out_prefix_local}/${folder}_rna.fastq.gz"
 
+    # ---- CHECK: did the files upload okay? ----
     upload_ok=true
     if [ -f "$crispr_fastq" ]; then
         aws s3 cp "$crispr_fastq" "${out_s3_prefix}/${folder}_crispr.fastq.gz" --only-show-errors || upload_ok=false
